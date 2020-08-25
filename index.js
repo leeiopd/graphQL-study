@@ -1,6 +1,6 @@
 const express = require("express");
 const { graphqlHTTP } = require("express-graphql");
-const { buildSchema } = require("graphql");
+const { buildSchema, parse } = require("graphql");
 
 const schema = buildSchema(`
 input ProductInput{
@@ -22,6 +22,8 @@ type Query{
 
 type Mutation{
   addProduct( input: ProductInput) : Product
+  updateProduct(id: ID!, input: ProductInput!): Product
+  deleteProduct(id: ID!): String
 }
 `);
 
@@ -50,6 +52,22 @@ const root = {
     products.push(input);
     return root.getProduct({ id: input.id });
   },
+
+  updateProduct: ({ id, input }) => {
+    const index = products.findIndex((product) => product.id === parseInt(id));
+    products[index] = {
+      id: parseInt(id),
+      ...input,
+      // ... - 오퍼레이팅 연산자
+    };
+    return products[index];
+  },
+
+  deleteProduct: ({ id }) => {
+    const index = product.findIndex((product) => product.id === parse(id));
+    products.splice(index, 1);
+    return "remove success";
+  },
 };
 
 const app = express();
@@ -62,6 +80,8 @@ app.use(
     graphiql: true,
   })
 );
+
+app.use("/static", express.static("static"));
 
 app.listen(4000, () => {
   console.log("running server port 4000");

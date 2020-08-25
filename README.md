@@ -174,7 +174,7 @@
     ];
     ```
 
-  * 응답 작성
+  * 동작/응답 작성
 
     ```javascript
     const root = {
@@ -283,3 +283,95 @@
 
     
 
+* DATA UPDATE/DELETE
+
+  * 스키마 작성
+
+    ```javascript
+    const schema = buildSchema(`
+    input ProductInput{
+      name: String
+      price: Int
+      description: String
+    }
+    
+    type Product {
+      id: ID!
+      name: String
+      price: Int
+      description: String
+    }
+    
+    type Query{
+      getProduct(id : ID!) : Product
+    }
+    
+    
+    ## Mutation - 데이터의 수정 시 사용하는 graphQL문
+    type Mutation{
+      addProduct( input: ProductInput) : Product
+      
+    	## 수정 스키마
+    	updateProduct(id: ID!, input: ProductInput!): Product
+    	
+    	## 삭제 스미카
+      deleteProduct(id: ID!): String
+    }
+    `);
+    ```
+
+  * 동작/응답 작성
+
+    ```javascript
+    
+    const root = {
+      getProduct: ({ id }) =>
+        products.find((product) => product.id === parseInt(id)),
+    
+      addProduct: ({ input }) => {
+        input.id = parseInt(products.length + 1);
+        products.push(input);
+        return root.getProduct({ id: input.id });
+      },
+    
+      ## 수정
+      updateProduct: ({ id, input }) => {
+        const index = products.findIndex((product) => product.id === parseInt(id));
+        products[index] = {
+          id: parseInt(id),
+          ...input,
+          // ... - 확산연산자
+        };
+        return products[index];
+      },
+    
+    	## 삭제  
+      deleteProduct: ({ id }) => {
+        const index = product.findIndex((product) => product.id === parse(id));
+        products.splice(index, 1);
+        return "remove success";
+      },
+    };
+    ```
+
+  * 실제 요청
+
+    ```
+    ## 수정
+    POST - http://localhost:4000/graphQL
+    
+    {
+        "query": "mutation updateProduct( $id : ID! , $input: ProductInput! ) { updateProduct( id : $id  , input: $input) { id } }",
+        "variables": { "id" : 1 ,"input" : { "name" : "수정상품" , "price" : 1000 , "description" : "후후후" } }
+    }
+    
+    ## 삭제
+    POST - http://lcoalhost:4000/graphQL
+    
+    {
+        "query": "mutation deleteProduct( $id : ID! ) { deleteProduct( id : $id  )  }",
+        "variables": { "id" : 1  }
+    }
+    ```
+
+    
