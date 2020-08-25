@@ -132,6 +132,80 @@
       
       ```
 
-      
+
+
+
+* READ
+
+  * 데이터 구조 / 쿼리 생성
+
+    ```javascript
+    const schema = buildSchema(`
+    	## '!' 는 필수 항목 의미
+    	type Product {
+    		id: ID!
+    		name: String
+    		price: Int
+    		description: String
+    		}
+    
+    	## 쿼리
+    	type Query{
+    		getProduct(id: ID!): Product
+    	}`);
+    ```
+
+  * 임시 데이터 작성
+
+    ```javascript
+    const products = [
+      {
+        id: 1,
+        name: "첫번째 제품",
+        price: 2000,
+        description: "히히히",
+      },
+      {
+        id: 2,
+        name: "두번째 제품",
+        price: 4000,
+        description: "허허허",
+      },
+    ];
+    ```
+
+  * 쿼리 작성
+
+    ```javascript
+    const root = {
+      getProduct: ({ id }) =>
+        products.find((product) => product.id === parseInt(id)),
+    };
+    ```
+
+  * 데이터 읽기
+
+    ```javascript
+    ## 데이터를 불러오기 위한 쿼리
+    {
+      getProduct(id: 2){
+        name
+        price
+      }
+    }
+    ```
+
+  * 결과
+
+    ```javascript
+    {
+      "data": {
+        "getProduct":{
+          "name": "두번째 제품",
+          "price": 4000
+        }
+      }
+    }
+    ```
 
     
