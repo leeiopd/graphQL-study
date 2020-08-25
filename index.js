@@ -3,6 +3,12 @@ const { graphqlHTTP } = require("express-graphql");
 const { buildSchema } = require("graphql");
 
 const schema = buildSchema(`
+input ProductInput{
+  name: String
+  price: Int
+  description: String
+}
+
 type Product {
   id: ID!
   name: String
@@ -12,7 +18,12 @@ type Product {
 
 type Query{
   getProduct(id : ID!) : Product
-}`);
+}
+
+type Mutation{
+  addProduct( input: ProductInput) : Product
+}
+`);
 
 // 임시 데이터
 const products = [
@@ -33,6 +44,12 @@ const products = [
 const root = {
   getProduct: ({ id }) =>
     products.find((product) => product.id === parseInt(id)),
+
+  addProduct: ({ input }) => {
+    input.id = parseInt(products.length + 1);
+    products.push(input);
+    return root.getProduct({ id: input.id });
+  },
 };
 
 const app = express();

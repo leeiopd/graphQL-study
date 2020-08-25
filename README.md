@@ -135,9 +135,9 @@
 
 
 
-* READ
+* DATA READ
 
-  * 데이터 구조 / 쿼리 생성
+  * 데이터 구조 / 쿼리 작성
 
     ```javascript
     const schema = buildSchema(`
@@ -174,7 +174,7 @@
     ];
     ```
 
-  * 쿼리 작성
+  * 응답 작성
 
     ```javascript
     const root = {
@@ -209,3 +209,77 @@
     ```
 
     
+
+* DATA WRITE
+
+  * 데이터 입력 스키마 작성
+
+    ```javascript
+    const schema = buildSchema(`
+      ## 데이터 입력 Form
+      input ProductInput{
+        name: String
+        price: Int
+        description: String
+      }
+    
+      type Product {
+        id: ID!
+        name: String
+        price: Int
+        description: String
+      }
+    
+      type Query{
+        getProduct(id : ID!) : Product
+      }
+    
+      ## Mutation - 새로운 데이터 추가나 수정시 사용하는 graphQL 문
+      type Mutation{
+        addProduct( input: ProductInput) : Product
+      }
+    `);
+    ```
+
+  * 응답 작성
+
+    ```javascript
+    const root = {
+      getProduct: ({ id }) =>
+        products.find((product) => product.id === parseInt(id)),
+    
+      addProduct: ({ input }) => {
+        input.id = parseInt(products.length + 1);
+        products.push(input);
+        return root.getProduct({ id: input.id });
+      },
+    };
+    ```
+
+  * 실제 요청
+
+    ```
+    POST - http://localhost:4000/graphql
+    
+    {
+        "query":"mutation addProduct($input: ProductInput) {addProduct(input: $input) {id}}",
+        "variables":{"input":{"name":"세번째 상품", "price":3000, "description":"후후후"}}
+    }
+    ```
+
+  * 응답
+
+    ```
+    데이터 작성 완료 후 응답,
+    
+    {
+        "data": {
+            "addProduct": {
+                "id": "3"
+            }
+        }
+    }
+    ```
+
+    
+
